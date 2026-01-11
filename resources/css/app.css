@@ -1,0 +1,33 @@
+@import 'tailwindcss';
+
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+@source '../../storage/framework/views/*.php';
+@source '../**/*.blade.php';
+@source '../**/*.js';
+
+@theme {
+    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
+        'Segoe UI Symbol', 'Noto Color Emoji';
+}
+
+/* main card */
+.main-card { @apply bg-white text-zinc-500 rounded-xl shadow-sm border-1 border-zinc-300 p-10 }
+
+/* titles */
+.title-1 { @apply text-2xl font-bold text-zinc-900 }
+.title-2 { @apply text-xl font-semibold text-zinc-700 }
+.title-3 { @apply text-lg font-medium text-zinc-600 }
+
+hr { @apply border-zinc-300 }
+
+/* buttons */
+.btn { @apply bg-zinc-800 text-white text-sm font-semibold rounded-lg py-2 px-4 cursor-pointer hover:bg-zinc-600 }
+.btn-white { @apply bg-white text-zinc-900 text-sm font-semibold rounded-lg border-1 border-zinc-300 py-2 px-4 cursor-pointer hover:bg-zinc-100 }
+.btn-red { @apply bg-red-600 text-white text-sm font-semibold rounded-lg py-2 px-4 cursor-pointer hover:bg-red-500 }
+
+/* inputs */
+.label { @apply block text-zinc-600 mb-2 }
+.input { @apply p-2 border-1 border-zinc-400 rounded-lg focus:outline-none focus:ring-2 focus:ring-zinc-500 }
+.checkbox { @apply w-4 h-4 rounded-full text-zinc-600 accent-black focus:ring-zinc-500 }
+.radio { @apply w-4 h-4 rounded-full text-zinc-600 accent-black focus:ring-zinc-500 }
+.link { @apply text-zinc-700 underline hover:text-blue-500 }
