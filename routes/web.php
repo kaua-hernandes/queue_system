@@ -5,18 +5,22 @@ use App\Http\Controllers\MainController;
 use Illuminate\Support\Facades\Route;
 
 // guest routes
-Route::middleware(['guest'])->group((function() {
+Route::middleware(['guest'])->group((function () {
 
     // authentication (login)
     Route::get('/login', [AuthController::class, 'login'])->name('login');
     Route::post('/login', [AuthController::class, 'loginSubmit'])->name('login.submit');
-
 }));
 
 // authenticated routes
-Route::middleware(['auth'])->group((function() {
+Route::middleware(['auth'])->group((function () {
 
     Route::get('/', [MainController::class, 'index'])->name('home');
+
+    // create a new queue
+    Route::get('/queue/create', [MainController::class, 'createQueue'])->name('queue.create');
+    Route::post('/queue/create', [MainController::class, 'createQueueSubmit'])->name('queue.create.submit');
+    Route::get('/queue/generate-hash', [MainController::class, 'generateQueueHash'])->name('queue.generate.hash');
 
     // queues details
     Route::get('/queues/{id}', [MainController::class, 'queueDetails'])->name('queues.details');
@@ -27,5 +31,4 @@ Route::middleware(['auth'])->group((function() {
 
     // logout
     Route::get('/logout', [AuthController::class, 'logout'])->name('logout');
-
 }));

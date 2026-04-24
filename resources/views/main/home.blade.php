@@ -9,12 +9,16 @@
 
     <div class="main-card overflow-auto">
 
-        <p class="title-2">Filas de espera</p>
+        <div class="flex justify-between items-center">
+            <p class="title-2">Filas de espera</p>
+            <p class="title-3">Empresa: <strong>{{ $companyName }}</strong></p>
+        </div>
 
-        <hr class="mt-2 mb-4">
+
+        <hr class="my-4">
 
         <div class="mb-4">
-            <a href="#" class="btn"><i class="far fa-plus me-2"></i>Criar nova fila...</a>
+            <a href="{{ route('queue.create') }}" class="btn"><i class="far fa-plus me-2"></i>Criar nova fila...</a>
         </div>
 
         @if ($queues->count() === 0)
@@ -23,48 +27,72 @@
                 <p class="text-sm">Clique no botão acima, para criar uma nova fila.</p>
             </div>
         @else
-        @endif
-        <table id="tabela">
-            <thead class="bg-black text-white">
-                <tr>
-                    <th class="text-xs w-2/14">Nome</th>
-                    <th class="text-xs w-2/14">Serviço</th>
-                    <th class="text-xs w-2/14">Balcão</th>
-                    <th class="text-xs w-1/14 text-center">Estado</th>
-                    <th class="text-xs text-center w-1/14">Tickets</th>
-                    <th class="text-xs text-center w-1/14">Ignorados</th>
-                    <th class="text-xs text-center w-1/14">Não atendidos</th>
-                    <th class="text-xs text-center w-1/14">Atendidos</th>
-                    <th class="text-xs text-center w-1/14">Em espera</th>
-                    <th class="text-xs text-center w-2/14"></th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach ($queues as $queue)
+
+            <div class="flex justify-between gap-4 my-4">
+                <div class="bg-gradient-to-b from-slate-200 to-slate-50 border-slate-300 rounded-xl w-full p-4 text-center text-xl">
+                    Total Filas<br><strong class="text-3xl">{{ $companyTotal['total_queues'] }}</strong>
+                </div>
+                <div class="bg-gradient-to-b from-slate-200 to-slate-50 border-slate-300 rounded-xl w-full p-4 text-center text-xl">
+                    Total tickets<br><strong class="text-3xl">{{ $companyTotal['total_tickets'] }}</strong>
+                </div>
+                <div class="bg-gradient-to-b from-slate-200 to-slate-50 border-slate-300 rounded-xl w-full p-4 text-center text-xl">
+                    Total dispensados<br><strong class="text-3xl">{{ $companyTotal['total_dismissed'] }}</strong>
+                </div>
+                <div class="bg-gradient-to-b from-slate-200 to-slate-50 border-slate-300 rounded-xl w-full p-4 text-center text-xl">
+                    Total não atendidos<br><strong class="text-3xl">{{ $companyTotal['total_not_attended'] }}</strong>
+                </div>
+                <div class="bg-gradient-to-b from-slate-200 to-slate-50 border-slate-300 rounded-xl w-full p-4 text-center text-xl">
+                    Total chamados<br><strong class="text-3xl">{{ $companyTotal['total_called'] }}</strong>
+                </div>
+                <div class="bg-gradient-to-b from-slate-200 to-slate-50 border-slate-300 rounded-xl w-full p-4 text-center text-xl">
+                    Total em espera<br><strong class="text-3xl">{{ $companyTotal['total_waiting'] }}</strong>
+                </div>
+            </div>
+
+            <table id="tabela">
+                <thead class="bg-black text-white">
                     <tr>
-                        <td>{{ $queue->name }}</td>
-                        <td>{{ $queue->service_name }}</td>
-                        <td>{{ $queue->service_desk }}</td>
-                        <td>{!! getQueueStateIcon($queue->status) !!}</td>
-                        <td>{{ $queue->total_tickets }}</td>
-                        <td>{{ $queue->total_dismissed }}</td>
-                        <td>{{ $queue->total_non_attended }}</td>
-                        <td>{{ $queue->total_called }}</td>
-                        <td>{{ $queue->total_waiting }}</td>
-                        <td class="text-right">
-                            <a href="{{ route('queues.details', ['id' => Crypt::encrypt($queue->id)]) }}"
-                                class="btn-white" title="Detalhes"><i class="fa-solid fa-bars"></i></a>
-                            <a href="#" class="btn-white" title="Editar"><i
-                                    class="fa-regular fa-pen-to-square"></i></a>
-                            <a href="#" class="btn-white" title="Duplicar"><i class="fa-regular fa-clone"></i></a>
-                            <a href="#" class="btn-red" title="Eliminar"><i
-                                    class="fa-regular fa-trash-can"></i></a>
-                        </td>
+                        <th class="text-xs w-2/14">Nome</th>
+                        <th class="text-xs w-2/14">Serviço</th>
+                        <th class="text-xs w-2/14">Balcão</th>
+                        <th class="text-xs w-1/14 text-center">Estado</th>
+                        <th class="text-xs text-center w-1/14">Tickets</th>
+                        <th class="text-xs text-center w-1/14">Ignorados</th>
+                        <th class="text-xs text-center w-1/14">Não atendidos</th>
+                        <th class="text-xs text-center w-1/14">Atendidos</th>
+                        <th class="text-xs text-center w-1/14">Em espera</th>
+                        <th class="text-xs text-center w-2/14"></th>
                     </tr>
-                @endforeach
-            </tbody>
-        </table>
+                </thead>
+                <tbody>
+                    @foreach ($queues as $queue)
+                        <tr>
+                            <td>{{ $queue->name }}</td>
+                            <td>{{ $queue->service_name }}</td>
+                            <td>{{ $queue->service_desk }}</td>
+                            <td>{!! getQueueStateIcon($queue->status) !!}</td>
+                            <td>{{ $queue->total_tickets }}</td>
+                            <td>{{ $queue->total_dismissed }}</td>
+                            <td>{{ $queue->total_non_attended }}</td>
+                            <td>{{ $queue->total_called }}</td>
+                            <td>{{ $queue->total_waiting }}</td>
+                            <td class="text-right">
+                                <a href="{{ route('queues.details', ['id' => Crypt::encrypt($queue->id)]) }}"
+                                    class="btn-white" title="Detalhes"><i class="fa-solid fa-bars"></i></a>
+                                <a href="#" class="btn-white" title="Editar"><i
+                                        class="fa-regular fa-pen-to-square"></i></a>
+                                <a href="#" class="btn-white" title="Duplicar"><i
+                                        class="fa-regular fa-clone"></i></a>
+                                <a href="#" class="btn-red" title="Eliminar"><i
+                                        class="fa-regular fa-trash-can"></i></a>
+                            </td>
+                        </tr>
+                    @endforeach
+                </tbody>
+            </table>
     </div>
+    @endif
+
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {

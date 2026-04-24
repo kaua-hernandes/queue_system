@@ -40,6 +40,26 @@
         @if ($tickets->count() === 0)
             <p class="text-xl text-center text-gray-400 my-12">Não existem <i>tickets</i> nesta fila.</p>
         @else
+
+            <div class="flex justify-between gap-4 my-4">
+                <div class="bg-gradient-to-b from-slate-200 to-slate-50 border-slate-300 rounded-xl w-full p-4 text-center text-xl">
+                    Total<br><strong class="text-3xl">{{ $queue->total_tickets }}</strong>
+                </div>
+                <div class="bg-gradient-to-b from-slate-200 to-slate-50 border-slate-300 rounded-xl w-full p-4 text-center text-xl">
+                    Dispensadas<br><strong class="text-3xl">{{ $queue->total_dismissed }}</strong>
+                </div>
+                <div class="bg-gradient-to-b from-slate-200 to-slate-50 border-slate-300 rounded-xl w-full p-4 text-center text-xl">
+                    Não atendidas<br><strong class="text-3xl">{{ $queue->total_not_attended }}</strong>
+                </div>
+                <div class="bg-gradient-to-b from-slate-200 to-slate-50 border-slate-300 rounded-xl w-full p-4 text-center text-xl">
+                    Chamadas<br><strong class="text-3xl">{{ $queue->total_called }}</strong>
+                </div>
+                <div class="bg-gradient-to-b from-slate-200 to-slate-50 border-slate-300 rounded-xl w-full p-4 text-center text-xl">
+                    Aguardando<br><strong class="text-3xl">{{ $queue->total_waiting }}</strong>
+                </div>
+            </div>
+
+
             <table id="table-tickets">
                 <thead class="bg-black text-white">
                     <tr>
