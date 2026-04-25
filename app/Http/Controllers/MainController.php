@@ -364,4 +364,99 @@ class MainController extends Controller
 
         return redirect()->route('home');
     }
+
+    public function cloneQueue($id)
+    {
+        // check if decrypted queue ID is valid
+        try {
+            $id  =Crypt::decrypt($id);
+        } catch (\Exception $e) {
+            abort(403, 'Id de fila inválido.');
+        }
+
+        // check if the queue exists and belonts to the authenticated user's company
+        $queue = Queue::where('id', $id)
+            ->where('id_company', Auth::user()->id_company)
+            ->firstOrFail();
+
+        if (!$queue) {
+            abort(404, 'Fila não encontrada.');
+        }
+
+        // show the clone queue form
+        $data = [
+            'subtitle' => 'Clonar fila',
+            'queue' => $queue,
+            'queueColors' => json_decode($queue->queue_colors, true)
+        ];
+
+        return view('main.queue_clone_frm', $data);
+    }
+
+    public function cloneQueueSubmit(Request $request)
+    {
+        // form validation
+        $request->validate(
+            [
+                'name' => 'required|min:5|max:100'
+            ],
+            [
+                'name.required' => 'O nome da fila é obrigatório.',
+                'name.min' => 'O nome da fila deve conter no mínimo 5 caracteres.',
+                'name.max' => 'O nome da fila deve conter no máximo 100 caracteres.'
+            ]);
+
+        // check if the queue ID is provided
+        if (!$request->has('original_queue_id')) {
+            abort(403, 'Id de fila inválido.');
+        }
+
+        // try decrypting the queue ID
+        try {
+            $queueId = Crypt::decrypt($request->original_queue_id);
+        } catch (\Exception $e) {
+            abort(403, 'Id de fila inválido.');
+        }
+
+        // check if the original queue belongs to the authenticated user's company
+        $queue = Queue::where('id', $queueId)
+            ->where('id_company', Auth::user()->id_company)
+            ->firstOrFail();
+
+        if (!$queue) {
+            abort(404, 'Fila não encontrada.');
+        }
+
+        // check if the name is unique for the company
+        $queueExists = Queue::where('id_company', Auth::user()->id_company)
+            ->where('name', trim($request->name))
+            ->exists();
+        if ($queueExists) {
+            return redirect()->back()->withInput()->with(['server_error' => 'Já existe uma fila com esse nome. Por favor, escolha outro.']);
+        }
+
+        // prepare the data to be saved
+        $newQueue = new Queue();
+        $newQueue->id_company = Auth::user()->id_company;
+        $newQueue->name = trim($request->name);
+        $newQueue->description = $queue->description;
+        $newQueue->service_name = $queue->service_name;
+        $newQueue->service_desk = $queue->service_desk;
+        $newQueue->queue_prefix = $queue->queue_prefix;
+        $newQueue->queue_total_digits = $queue->queue_total_digits;
+        $newQueue->queue_colors = $queue->queue_colors;
+        $newQueue->status = $queue->status;
+
+        // set a new hash code (unique)
+        $hash = hash('sha256', Str::random(40));
+        while (Queue::where('hash_code', $hash)->exists()) {
+            $hash = hash('sha256', Str::random(40));
+        }
+        $newQueue->hash_code = $hash;
+
+        // save the new queue in the database
+        $newQueue->save();
+
+        return redirect()->route('home');
+    }
 }

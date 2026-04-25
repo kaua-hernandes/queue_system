@@ -26,6 +26,10 @@ Route::middleware(['auth'])->group((function () {
     Route::get('queue/edit/{id}', [MainController::class, 'editQueue'])->name('queue.edit');
     Route::post('queue/edit', [MainController::class, 'editQueueSubmit'])->name('queue.edit.submit');
 
+    // clone a queue
+    Route::get('/queue/clone/{id}', [MainController::class, 'cloneQueue'])->name('queue.clone');
+    Route::post('/queue/clone', [MainController::class, 'cloneQueueSubmit'])->name('queue.clone.submit');
+
     // queues details
     Route::get('/queues/{id}', [MainController::class, 'queueDetails'])->name('queue.details');
 
