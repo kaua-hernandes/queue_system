@@ -62,7 +62,7 @@ class MainController extends Controller
         $totalQueues = Queue::where('id_company', $companyId)->count();
 
         // get all tickets of the company
-        $tickets = QueueTicket::whereHas('queue', function($query) use ($companyId){
+        $tickets = QueueTicket::whereHas('queue', function ($query) use ($companyId) {
             $query->where('id_company', $companyId);
         })->get();
 
@@ -97,14 +97,15 @@ class MainController extends Controller
                     $query->where('status', 'dismissed')
                         ->whereNull('deleted_at');
                 },
-                 'tickets as total_not_attended' => function ($query) {
+                'tickets as total_not_attended' => function ($query) {
                     $query->where('status', 'non_attended')
                         ->whereNull('deleted_at');
                 },
-                 'tickets as total_called' => function ($query) {
+                'tickets as total_called' => function ($query) {
                     $query->where('status', 'called')
                         ->whereNull('deleted_at');
-                }, 'tickets as total_waiting' => function ($query) {
+                },
+                'tickets as total_waiting' => function ($query) {
                     $query->where('status', 'waiting')
                         ->whereNull('deleted_at');
                 },
@@ -234,11 +235,133 @@ class MainController extends Controller
         $hash = hash('sha256', Str::random(40));
 
         // make certain that the hash is unique
-        while(Queue::where('hash_code', $hash)->exists()) {
+        while (Queue::where('hash_code', $hash)->exists()) {
             $hash = hash('sha256', Str::random(40));
         }
 
         // return the unique hash code as json
         return response()->json(['hash' => $hash]);
+    }
+
+    public function editQueue($id)
+    {
+        // check if the decrypted queue id is valid
+        try {
+            $id = Crypt::decrypt($id);
+        } catch (\Exception $e) {
+            abort(403, 'Id de fila inválido.');
+        }
+
+        // check if the queue exists and belongs to the authenticated user's company
+        $queue = Queue::where('id', $id)
+            ->where('id_company', Auth::user()->id_company)
+            ->firstOrFail();
+
+        if (!$queue) {
+            abort(404, 'Fila não encontrada.');
+        }
+
+        // show the edit queue form
+        $data = [
+            'subtitle' => 'Editar fila',
+            'queue' => $queue,
+            'queueColors' => json_decode($queue->queue_colors, true)
+        ];
+
+        return view('main.queue_edit_frm', $data);
+    }
+
+    public function editQueueSubmit(Request $request)
+    {
+        // validate the request
+        $request->validate(
+            [
+                'name' => 'required|min:5|max:100',
+                'description' => 'required|min:5|max:255',
+                'service' => 'required|min:3|max:50',
+                'desk' => 'required|min:1|max:20',
+                'prefix' => 'required|regex:/^[A-Z\-]{1}$/',
+                'color_1' => 'required|regex:/^\#[a-f0-9]{6}$/',
+                'color_2' => 'required|regex:/^\#[a-f0-9]{6}$/',
+                'color_3' => 'required|regex:/^\#[a-f0-9]{6}$/',
+                'color_4' => 'required|regex:/^\#[a-f0-9]{6}$/',
+                'status' => 'required|in:active,inactive'
+            ],
+            [
+                'name.required' => 'O nome da fila é obrigatório.',
+                'name.min' => 'O nome da fila deve conter no mínimo 5 caracteres.',
+                'name.max' => 'O nome da fila deve conter no máximo 100 caracteres.',
+                'description.required' => 'A descrição da fila é obrigatória.',
+                'description.min' => 'A descrição da fila deve conter no mínimo 5 caracteres.',
+                'description.max' => 'A descrição da fila deve conter no máximo 255 caracteres.',
+                'service.required' => 'O serviço da fila é obrigatório.',
+                'service.min' => 'O serviço da fila deve conter no mínimo 3 caracteres.',
+                'service.max' => 'O serviço da fila deve conter no máximo 50 caracteres.',
+                'desk.required' => 'O guichê da fila é obrigatório.',
+                'desk.min' => 'O guichê da fila deve conter no mínimo 1 caracteres.',
+                'desk.max' => 'O guichê da fila deve conter no máximo 20 caracteres.',
+                'prefix.required' => 'O prefixo da fila é obrigatório.',
+                'prefix.regex' => 'O prefixo da fila deve conter uma letra maiúscula seguida de um hífen (ex: A-).',
+                'color_1.required' => 'A cor 1 é obrigatória.',
+                'color_1.regex' => 'A cor 1 deve ser um código hexadecimal válido (ex: #ff0000).',
+                'color_2.required' => 'A cor 2 é obrigatória.',
+                'color_2.regex' => 'A cor 2 deve ser um código hexadecimal válido (ex: #ff0000).',
+                'color_3.required' => 'A cor 3 é obrigatória.',
+                'color_3.regex' => 'A cor 3 deve ser um código hexadecimal válido (ex: #ff0000).',
+                'color_4.required' => 'A cor 4 é obrigatória.',
+                'color_4.regex' => 'A cor 4 deve ser um código hexadecimal válido (ex: #ff0000).',
+                'status.required' => 'O status da fila é obrigatório.',
+                'status.in' => 'O status da fila deve ser "active" ou "inactive".'
+            ]
+        );
+
+        // check if queue ID is provided
+        if (!$request->has('queue_id')) {
+            abort(403, 'Id de fila inválido.');
+        }
+
+        try{
+            Crypt::decrypt($request->queue_id);
+        } catch (\Exception $e) {
+            abort(403, 'Id de fila inválido.');
+        }
+
+        // check if the queue identified belongs to the authenticated user's company
+        $queueId = Crypt::decrypt($request->queue_id);
+        $companyId = Auth::user()->id_company;
+
+        $queue = Queue::where('id', $queueId)
+            ->where('id_company', $companyId)
+            ->firstOrFail();
+
+        if (!$queue) {
+            abort(404, 'Fila não encontrada.');
+        }
+
+        // check if the name is unique for the company
+        $queueExists = Queue::where('id_company', $companyId)
+            ->where('name', $request->name)
+            ->where('id', '!=', $queueId)
+            ->exists();
+        if ($queueExists) {
+            return redirect()->back()->withInput()->with(['server_error' => 'Já existe uma fila com esse nome. Por favor, escolha outro.']);
+        }
+
+        // prepare the data to save / update the database
+        $queue->name = trim($request->name);
+        $queue->description = trim($request->description);
+        $queue->service_name = trim($request->service);
+        $queue->service_desk = trim($request->desk);
+        $queue->queue_prefix = strtoupper(trim($request->prefix));
+        $queue->queue_colors = json_encode([
+            'prefix_bg_color' => trim($request->color_1),
+            'prefix_text_color' => trim($request->color_2),
+            'number_bg_color' => trim($request->color_3),
+            'number_text_color' => trim($request->color_4)
+        ]);
+        $queue->status = trim($request->status);
+        $queue->save();
+
+        return redirect()->route('home');
     }
 }

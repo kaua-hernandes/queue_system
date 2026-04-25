@@ -34,7 +34,7 @@ if (!function_exists('getFormattedTicketNumber')) {
         }
 
         // numbers
-        if ($totalDigits > 0) {
+        if ($totalDigits >= 0) {
             $result .= str_pad($ticketNumber, $totalDigits, '0', STR_PAD_LEFT);
         }
 

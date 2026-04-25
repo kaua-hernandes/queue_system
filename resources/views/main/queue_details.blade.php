@@ -20,7 +20,7 @@
             <p class="bg-zinc-100 border-1 border-slate-300 rounded-md w-1/2 p-2">Balcão: <span
                     class="text-black font-bold">{{ $queue->service_desk }}</span></p>
             <p class="bg-zinc-100 border-1 border-slate-300 rounded-md w-full p-2">Formato: <span
-                    class="text-black font-bold">{{ getFormattedTicketNumber(0, $queue->queue_prefix, $queue->queue_total_digits) }}</span>
+                    class="text-black font-bold">{{ getFormattedTicketNumber(0, $queue->queue_total_digits, $queue->queue_prefix) }}</span>
             </p>
         </div>
 
