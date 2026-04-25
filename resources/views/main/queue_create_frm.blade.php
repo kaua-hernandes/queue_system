@@ -1,14 +1,10 @@
 <x-layouts.auth-layout subtitle="{{ empty($subtitle) ? '' : $subtitle }}">
 
-    @php
-        // if (session()->has('errors')) { dd(session('errors')); }
-    @endphp
-
     <div class="main-card overflow-auto">
 
         <div class="flex justify-between items-center">
             <p class="title-2">Criar nova fila de espera</p>
-            <a href="#" class="btn"><i class="fa-solid fa-arrow-left me-2"></i>Voltar</a>
+            <a href="{{ route('home') }}" class="btn"><i class="fa-solid fa-arrow-left me-2"></i>Voltar</a>
         </div>
 
         <hr class="my-4">
@@ -26,14 +22,15 @@
                     <div class="mb-4">
                         <label for="name" class="label">Nome da fila</label>
                         <input type="text" name="name" id="name" class="input w-full"
-                            placeholder="Nome da fila">
+                            placeholder="Nome da fila" value="{{ old('name') }}">
                         {!! showValidationError($errors, 'name') !!}
+                        {!! showServerError() !!}
                     </div>
 
                     <div class="mb-4">
                         <label for="description" class="label">Descrição</label>
                         <input type="text" name="description" id="description" class="input w-full"
-                            placeholder="Descrição da fila" value="{{ old('name') }}">
+                            placeholder="Descrição da fila" value="{{ old('description') }}">
                         {!! showValidationError($errors, 'description') !!}
                     </div>
 

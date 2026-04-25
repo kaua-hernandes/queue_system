@@ -76,7 +76,7 @@
                             <td>{{ $queue->total_non_attended }}</td>
                             <td>{{ $queue->total_called }}</td>
                             <td>{{ $queue->total_waiting }}</td>
-                            <td class="text-right">
+                            <td class="text-right flex gap-2 justify-end">
                                 <a href="{{ route('queues.details', ['id' => Crypt::encrypt($queue->id)]) }}"
                                     class="btn-white" title="Detalhes"><i class="fa-solid fa-bars"></i></a>
                                 <a href="#" class="btn-white" title="Editar"><i
