@@ -27,24 +27,29 @@
                 <p class="text-sm">Clique no botão acima, para criar uma nova fila.</p>
             </div>
         @else
-
             <div class="flex justify-between gap-4 my-4">
-                <div class="bg-gradient-to-b from-slate-200 to-slate-50 border-slate-300 rounded-xl w-full p-4 text-center text-xl">
+                <div
+                    class="bg-gradient-to-b from-slate-200 to-slate-50 border-slate-300 rounded-xl w-full p-4 text-center text-xl">
                     Total Filas<br><strong class="text-3xl">{{ $companyTotal['total_queues'] }}</strong>
                 </div>
-                <div class="bg-gradient-to-b from-slate-200 to-slate-50 border-slate-300 rounded-xl w-full p-4 text-center text-xl">
+                <div
+                    class="bg-gradient-to-b from-slate-200 to-slate-50 border-slate-300 rounded-xl w-full p-4 text-center text-xl">
                     Total tickets<br><strong class="text-3xl">{{ $companyTotal['total_tickets'] }}</strong>
                 </div>
-                <div class="bg-gradient-to-b from-slate-200 to-slate-50 border-slate-300 rounded-xl w-full p-4 text-center text-xl">
+                <div
+                    class="bg-gradient-to-b from-slate-200 to-slate-50 border-slate-300 rounded-xl w-full p-4 text-center text-xl">
                     Total dispensados<br><strong class="text-3xl">{{ $companyTotal['total_dismissed'] }}</strong>
                 </div>
-                <div class="bg-gradient-to-b from-slate-200 to-slate-50 border-slate-300 rounded-xl w-full p-4 text-center text-xl">
+                <div
+                    class="bg-gradient-to-b from-slate-200 to-slate-50 border-slate-300 rounded-xl w-full p-4 text-center text-xl">
                     Total não atendidos<br><strong class="text-3xl">{{ $companyTotal['total_not_attended'] }}</strong>
                 </div>
-                <div class="bg-gradient-to-b from-slate-200 to-slate-50 border-slate-300 rounded-xl w-full p-4 text-center text-xl">
+                <div
+                    class="bg-gradient-to-b from-slate-200 to-slate-50 border-slate-300 rounded-xl w-full p-4 text-center text-xl">
                     Total chamados<br><strong class="text-3xl">{{ $companyTotal['total_called'] }}</strong>
                 </div>
-                <div class="bg-gradient-to-b from-slate-200 to-slate-50 border-slate-300 rounded-xl w-full p-4 text-center text-xl">
+                <div
+                    class="bg-gradient-to-b from-slate-200 to-slate-50 border-slate-300 rounded-xl w-full p-4 text-center text-xl">
                     Total em espera<br><strong class="text-3xl">{{ $companyTotal['total_waiting'] }}</strong>
                 </div>
             </div>
@@ -66,25 +71,37 @@
                 </thead>
                 <tbody>
                     @foreach ($queues as $queue)
-                        <tr>
+                        <tr class="{{ $queue->deleted_at !== null ? 'text-red-500' : '' }}">
                             <td>{{ $queue->name }}</td>
                             <td>{{ $queue->service_name }}</td>
                             <td>{{ $queue->service_desk }}</td>
-                            <td>{!! getQueueStateIcon($queue->status) !!}</td>
+                            @if ($queue->deleted_at === null)
+                                <td>{!! getQueueStateIcon($queue->status) !!}</td>
+                            @else
+                                <td><i class="fa-regular fa-trash-can"></i></td>
+                            @endif
+
                             <td>{{ $queue->total_tickets }}</td>
                             <td>{{ $queue->total_dismissed }}</td>
                             <td>{{ $queue->total_non_attended }}</td>
                             <td>{{ $queue->total_called }}</td>
                             <td>{{ $queue->total_waiting }}</td>
                             <td class="text-right flex gap-2 justify-end">
-                                <a href="{{ route('queue.details', ['id' => Crypt::encrypt($queue->id)]) }}"
-                                    class="btn-white" title="Detalhes"><i class="fa-solid fa-bars"></i></a>
-                                <a href="{{ route('queue.edit', ['id' => Crypt::encrypt($queue->id)]) }}" class="btn-white" title="Editar"><i
-                                        class="fa-regular fa-pen-to-square"></i></a>
-                                <a href="{{ route('queue.clone', ['id' => Crypt::encrypt($queue->id)]) }}" class="btn-white" title="Duplicar"><i
-                                        class="fa-regular fa-clone"></i></a>
-                                <a href="#" class="btn-red" title="Eliminar"><i
-                                        class="fa-regular fa-trash-can"></i></a>
+
+                                @if ($queue->deleted_at === null)
+                                    <a href="{{ route('queue.details', ['id' => Crypt::encrypt($queue->id)]) }}"
+                                        class="btn-white" title="Detalhes"><i class="fa-solid fa-bars"></i></a>
+                                    <a href="{{ route('queue.edit', ['id' => Crypt::encrypt($queue->id)]) }}"
+                                        class="btn-white" title="Editar"><i class="fa-regular fa-pen-to-square"></i></a>
+                                    <a href="{{ route('queue.clone', ['id' => Crypt::encrypt($queue->id)]) }}"
+                                        class="btn-white" title="Duplicar"><i class="fa-regular fa-clone"></i></a>
+                                    <a href="{{ route('queue.delete', ['id' => Crypt::encrypt($queue->id)]) }}"
+                                        class="btn-red" title="Eliminar"><i class="fa-regular fa-trash-can"></i></a>
+                                @else
+                                    <a href="{{ route('queue.restore', ['id' => Crypt::encrypt($queue->id)]) }}"
+                                        class="btn" title="Restaurar"><i class="fa-solid fa-trash-arrow-up"></i></a>
+                                @endif
+
                             </td>
                         </tr>
                     @endforeach

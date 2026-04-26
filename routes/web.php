@@ -30,6 +30,13 @@ Route::middleware(['auth'])->group((function () {
     Route::get('/queue/clone/{id}', [MainController::class, 'cloneQueue'])->name('queue.clone');
     Route::post('/queue/clone', [MainController::class, 'cloneQueueSubmit'])->name('queue.clone.submit');
 
+    // queue delete
+    Route::get('/queue/delete/{id}', [MainController::class, 'deleteQueue'])->name('queue.delete');
+    Route::get('/queue/confirm-delete/{id}', [MainController::class, 'confirmQueueDelete'])->name('queue.delete.confirm');
+
+    // restore deleted queue
+    Route::get('/queue/restore/{id}', [MainController::class, 'restoreQueue'])->name('queue.restore');
+
     // queues details
     Route::get('/queues/{id}', [MainController::class, 'queueDetails'])->name('queue.details');
 

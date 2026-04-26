@@ -28,29 +28,24 @@ class MainController extends Controller
     {
         $companyId = Auth::user()->id_company;
 
-        return Queue::where('id_company', $companyId)
+        return Queue::withTrashed()
+            ->where('id_company', $companyId)
             //->where('status', 'active')
-            ->whereNull('deleted_at')
             ->withCount([
                 'tickets as total_tickets' => function ($query) {
-                    $query->whereNotNull('status')
-                        ->whereNull('deleted_at');
+                    $query->whereNotNull('status');
                 },
                 'tickets as total_dismissed' => function ($query) {
-                    $query->where('status', 'dismissed')
-                        ->whereNull('deleted_at');
+                    $query->where('status', 'dismissed');
                 },
                 'tickets as total_non_attended' => function ($query) {
-                    $query->where('status', 'non_attended')
-                        ->whereNull('deleted_at');
+                    $query->where('status', 'non_attended');
                 },
                 'tickets as total_called' => function ($query) {
-                    $query->where('status', 'called')
-                        ->whereNull('deleted_at');
+                    $query->where('status', 'called');
                 },
                 'tickets as total_waiting' => function ($query) {
-                    $query->where('status', 'waiting')
-                        ->whereNull('deleted_at');
+                    $query->where('status', 'waiting');
                 }
             ])
             ->get();
@@ -320,7 +315,7 @@ class MainController extends Controller
             abort(403, 'Id de fila inválido.');
         }
 
-        try{
+        try {
             Crypt::decrypt($request->queue_id);
         } catch (\Exception $e) {
             abort(403, 'Id de fila inválido.');
@@ -369,7 +364,7 @@ class MainController extends Controller
     {
         // check if decrypted queue ID is valid
         try {
-            $id  =Crypt::decrypt($id);
+            $id  = Crypt::decrypt($id);
         } catch (\Exception $e) {
             abort(403, 'Id de fila inválido.');
         }
@@ -404,7 +399,8 @@ class MainController extends Controller
                 'name.required' => 'O nome da fila é obrigatório.',
                 'name.min' => 'O nome da fila deve conter no mínimo 5 caracteres.',
                 'name.max' => 'O nome da fila deve conter no máximo 100 caracteres.'
-            ]);
+            ]
+        );
 
         // check if the queue ID is provided
         if (!$request->has('original_queue_id')) {
@@ -456,6 +452,82 @@ class MainController extends Controller
 
         // save the new queue in the database
         $newQueue->save();
+
+        return redirect()->route('home');
+    }
+
+    public function deleteQueue($id)
+    {
+        // check if the decripted queue ID is valid
+        try {
+            $id = Crypt::decrypt($id);
+        } catch (\Exception $e) {
+            abort(403, 'Id de fila inválido.');
+        }
+
+        // check if the queue exists and belongs to the authenticated user's company
+        $queue = Queue::where('id', $id)
+            ->where('id_company', Auth::user()->id_company)
+            ->firstOrFail();
+
+        if (!$queue) {
+            abort(404, 'Fila não encontrada.');
+        }
+
+        // show the delete confirmation page
+        $data = [
+            'subtitle' => 'Eliminar fila',
+            'queue' => $queue
+        ];
+
+        return view('main.queue_delete', $data);
+    }
+
+    public function confirmQueueDelete($id)
+    {
+        // check if the decripted queue ID is valid
+        try {
+            $id = Crypt::decrypt($id);
+        } catch (\Exception $e) {
+            abort(403, 'Id de fila inválido.');
+        }
+
+        // check if the queue exists and belongs to the authenticated user's company
+        $queue = Queue::where('id', $id)
+            ->where('id_company', Auth::user()->id_company)
+            ->firstOrFail();
+
+        if (!$queue) {
+            abort(404, 'Fila não encontrada.');
+        }
+
+        // delete the queue (soft delete)
+        $queue->delete();
+
+        return redirect()->route('home');
+    }
+
+    public function restoreQueue($id)
+    {
+         // check if the decripted queue ID is valid
+        try {
+            $id = Crypt::decrypt($id);
+        } catch (\Exception $e) {
+            abort(403, 'Id de fila inválido.');
+        }
+
+        // check if the queue exists and belongs to the authenticated user's company
+        $queue = Queue::withTrashed()
+            ->where('id', $id)
+            ->where('id_company', Auth::user()->id_company)
+            ->firstOrFail();
+
+        if (!$queue) {
+            abort(404, 'Fila não encontrada.');
+        }
+
+        // restore the queue (soft delete)
+        $queue->restore();
 
         return redirect()->route('home');
     }
